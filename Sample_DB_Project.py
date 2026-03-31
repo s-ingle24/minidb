@@ -27,13 +27,13 @@ while True:
 
     choice = int(input("\nEnter choice: "))
 
-    # 1️⃣ Destinations
+    # 1️ Destinations
     if choice == 1:
         cursor.execute("SELECT Destination_Name, Location FROM Destinations")
         for row in cursor.fetchall():
             print("\nDestination:", row[0], "| Location:", row[1])
 
-    # 2️⃣ Food Places
+    # 2️ Food Places
     elif choice == 2:
         cursor.execute("""
         SELECT f.Food_Name, f.Rating, d.Destination_Name
@@ -45,7 +45,7 @@ while True:
 			
 	
 
-    # 3️⃣ Parking
+    # 3️ Parking
     elif choice == 3:
         cursor.execute("""
         SELECT p.Security_Level, p.Paid_Free, d.Destination_Name
@@ -55,7 +55,7 @@ while True:
         for row in cursor.fetchall():
             print("\nDestination:", row[2], "| Security:", row[0], "| Type:", row[1])
 
-    # 4️⃣ Emergency
+    # 4 Emergency
     elif choice == 4:
         cursor.execute("""
         SELECT e.Hospital_Name, e.Phone, d.Destination_Name
@@ -65,7 +65,7 @@ while True:
         for row in cursor.fetchall():
             print("\nHospital:", row[0], "| Phone:", row[1], "| Destination:", row[2])
 
-    # 5️⃣ Guides
+    # 5️ Guides
     elif choice == 5:
         cursor.execute("""
         SELECT g.Guide_Name, g.Conntact_No, d.Destination_Name
@@ -75,7 +75,7 @@ while True:
         for row in cursor.fetchall():
             print("\nGuide:", row[0], "| Contact:", row[1], "| Destination:", row[2])
 
-    # 6️⃣ Reviews
+    # 6️ Reviews
     elif choice == 6:
         cursor.execute("""
         SELECT u.Name, r.Rating, r.Comment, d.Destination_Name
@@ -86,7 +86,7 @@ while True:
         for row in cursor.fetchall():
             print("\nUser:", row[0], "| Rating:", row[1], "| Review:", row[2], "| Destination:", row[3])
 
-    # 7️⃣ Garages
+    # 7️ Garages
     elif choice == 7:
         cursor.execute("""
         SELECT b.Shop_Name, b.Contact_Number, d.Destination_Name
@@ -96,7 +96,7 @@ while True:
         for row in cursor.fetchall():
             print("\nGarage:", row[0], "| Contact:", row[1], "| Destination:", row[2])
 
-    # 8️⃣ Routes
+    # 8️ Routes
     elif choice == 8:
         cursor.execute("""
         SELECT r.Source, r.Distance_KM, r.Difficulty, d.Destination_Name
@@ -106,7 +106,7 @@ while True:
         for row in cursor.fetchall():
             print("\nFrom:", row[0], "| Distance:", row[1], "| Difficulty:", row[2], "| Destination:", row[3])
 
-    # 9️⃣ Stays (if table exists)
+    # 9️ Stays (if table exists)
     elif choice == 9:
         cursor.execute("""
         SELECT s.Stay_Name, s.Price, d.Destination_Name
@@ -116,7 +116,7 @@ while True:
         for row in cursor.fetchall():
             print("\nStay:", row[0], "| Price:", row[1], "| Destination:", row[2])
 
-    # 🔟 Default Filter
+    #  Default Filter
     elif choice == 10:
         print("\n--- Apply Filters ---")
         destination = input("Enter destination: ")
