@@ -1,4 +1,5 @@
 import mysql.connector as co
+from tabulate import tabulate
 
 conn = co.connect(
     host="localhost",
@@ -29,9 +30,43 @@ while True:
 
     # 1️ Destinations
     if choice == 1:
-        cursor.execute("SELECT Destination_Name, Location FROM Destinations")
-        for row in cursor.fetchall():
-            print("\nDestination:", row[0], "| Location:", row[1])
+        cursor.execute("SELECT Destination_ID, Destination_Name, Location FROM Destinations")
+        data = cursor.fetchall()
+        headers = ["Sr. No.", "Destination", "Location"]
+
+        print("\n--- Destinations ---")
+        print(tabulate(data, headers=headers, tablefmt="grid"))
+        
+        try:
+            dest = int(input("\nEnter Destination ID to view details: "))
+        except:
+            print("❌ Invalid input")
+            continue            
+        
+        cursor.execute("""
+			SELECT d.Destination_Name, d.Type, r.Difficulty, d.Location , f.Food_Name, g.Guide_Name, 
+                       g.Conntact_no, h.Hospital_Name, h.Phone, b.Shop_Name , b.Contact_Number 
+			FROM Destinations d
+			JOIN Food_Places f ON f.Destination_ID = d.Destination_ID
+			JOIN Bike_Repair_Shops b ON b.Destination_ID = d.Destination_ID
+			JOIN Emergency_Services h ON h.Destination_ID = d.Destination_ID
+			JOIN Guides g ON g.Destination_ID = d.Destination_ID
+			JOIN Parking_Spots p ON p.Destination_ID = d.Destination_ID
+			JOIN Routes r ON r.Destination_ID = d.Destination_ID
+            WHERE d.Destination_ID = %s
+            """, (dest,))
+        result = cursor.fetchall()
+
+        if not result:
+            print("❌ No data found for this destination")
+        else:
+            headers = [
+                 "Destination_Name", "Type", "Location", "Difficulty",
+                "Food_Name", "Guide_Name", "Contact_no",
+                 "Hospital_Name", "Phone", "Shop_Name", "Contact_Number"
+            ]
+            print("\n--- Destination Details ---")
+            print(tabulate(result, headers=headers, tablefmt="grid"))
 
     # 2️ Food Places
     elif choice == 2:
