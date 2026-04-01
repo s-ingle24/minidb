@@ -1,4 +1,5 @@
 import mysql.connector as co
+from tabulate import tabulate
 
 conn = co.connect(
     host="localhost",
@@ -14,133 +15,181 @@ print("Connected successfully!")
 while True:
     print("\n\n==== SMART TRAVEL SYSTEM ====\n")
     print("1. Show Destinations")
-    print("2. Show Food Places")
-    print("3. Show Nearby Parking ")
-    print("4. Show Emergency Services")
-    print("5. Show Local Guides")
-    print("6. Show Reviews")
-    print("7. Show Nearby Garages")
-    print("8. Show Routes")
-    #print("9. Show Stays")
-    #print("10. Apply Default Filters")
-    print("11. Exit")
+    print("2. Show Route")
+    print("3. Show Foods")
+    print("4. Show Parkings")
+    print("5. Show Stays")
+    print("6. Show Local Guides")
+    print("7. Show Emergency Services")
+    print("8. Show Garages")
+    print("9. Show User Reviews")
+    print("10. Exit")
 
     choice = int(input("\nEnter choice: "))
+    if choice in [2,3,4,5,6,7,8,9]:
+        destination = input("Enter Destination: ")
 
-    # 1️⃣ Destinations
+
+    # 1️ Destinations
     if choice == 1:
-        cursor.execute("SELECT Destination_Name, Location FROM Destinations")
-        for row in cursor.fetchall():
-            print("\nDestination:", row[0], "| Location:", row[1])
+        cursor.execute("SELECT Destination_ID, Destination_Name, Location FROM Destinations")
+        data = cursor.fetchall()
+        headers = ["Sr. No.", "Destination", "Location"]
 
-    # 2️⃣ Food Places
-    elif choice == 2:
+        print("\n--- Destinations ---")
+        print(tabulate(data, headers=headers, tablefmt="grid"))
+        
+        try:
+            dest = int(input("\nEnter Destination ID to view details: "))
+        except:
+            print("❌ Invalid input")
+            continue            
+        
         cursor.execute("""
-        SELECT f.Food_Name, f.Rating, d.Destination_Name
-        FROM Food_Places f
-        JOIN Destinations d ON d.Destination_ID = d.Destination_ID
-        """)
-        for row in cursor.fetchall():
-            print("\nFood:", row[0], "| Rating:", row[1], "| Destination:", row[2])
-			
+			SELECT d.Destination_Name, d.Type, r.Difficulty, d.Location , f.Food_Name, g.Guide_Name, 
+                       g.Conntact_no, h.Hospital_Name, h.Phone, b.Shop_Name , b.Contact_Number 
+			FROM Destinations d
+			JOIN Food_Places f ON f.Destination_ID = d.Destination_ID
+			JOIN Bike_Repair_Shops b ON b.Destination_ID = d.Destination_ID
+			JOIN Emergency_Services h ON h.Destination_ID = d.Destination_ID
+			JOIN Guides g ON g.Destination_ID = d.Destination_ID
+			JOIN Parking_Spots p ON p.Destination_ID = d.Destination_ID
+			JOIN Routes r ON r.Destination_ID = d.Destination_ID
+            WHERE d.Destination_ID = %s
+            """, (dest,))
+        result = cursor.fetchall()
+
+        if not result:
+            print("❌ No data found for this destination")
+        else:
+            headers = [
+                 "Destination_Name", "Type", "Location", "Difficulty",
+                "Food_Name", "Guide_Name", "Contact_no",
+                 "Hospital_Name", "Phone", "Shop_Name", "Contact_Number"
+            ]
+            print("\n--- Destination Details ---")
+            print(tabulate(result, headers=headers, tablefmt="grid"))
+
+	#2 Routes
+    if choice == 2:
+        cursor.execute("""
+		SELECT t.Base_Village, t.Distance_KM, t.Difficulty, d.Destination_Name
+		FROM Routes t
+		JOIN Destinations d ON t.Destination_ID = d.Destination_ID
+		WHERE d.Destination_Name = %s
+		""", (destination,))
+        
+        result = cursor.fetchall()
+        headers = [" Start From","Distance (km)","Difficulty","Location"] 
+        print("\n---Trek Route---\n")
+        print(tabulate(result, headers=headers, tablefmt="grid"))
+		
+		
+	# 3 Food
+    if choice == 3:
+        cursor.execute("""
+		SELECT f.Food_ID, f.Food_Name, f.Rating, f.Price_Range, d.Destination_Name
+		FROM Food_Places f
+		JOIN Destinations d ON f.Destination_ID = d.Destination_ID
+		WHERE d.Destination_Name = %s
+		""", (destination,))
+        
+        result = cursor.fetchall()
+        headers = ["Sr.No.","Food","Rating","PriceRange","Location"] 
+        print("\n---Food Places---\n")
+        print(tabulate(result, headers=headers, tablefmt="grid"))
+		
+	# 4 Parking
+    if choice == 4:
+        cursor.execute("""
+		SELECT p.Parking_ID, p.Paid_Free, p.Capacity, p.Security_Level, p.Contact_No, d.Destination_Name
+		FROM Parking_Spots p
+		JOIN Destinations d ON p.Destination_ID = d.Destination_ID
+		WHERE d.Destination_Name = %s
+		""", (destination,))
+        
+        result = cursor.fetchall()
+        headers = ["Parking ID","Paid/Free","Capacity","Security","Contact", "Location"] 
+        print("\n---Parking Spots---\n")
+        print(tabulate(result, headers=headers, tablefmt="grid"))
+		
+	#5 Stays
+    if choice == 5:
+        cursor.execute("""
+		SELECT s.Stay_Name ,s.Address, s.Contact_No, s.Rating, d.Destination_Name
+		FROM Stays s
+		JOIN Destinations d ON s.Destination_ID = d.Destination_ID
+		WHERE d.Destination_Name = %s
+		""", (destination,))
+        
+        result = cursor.fetchall()
+        headers = ["Stay Name","Address","Contact","Rating", "Location"] 
+        print("\n--- Stays ---\n")
+        print(tabulate(result, headers=headers, tablefmt="grid"))
+		
+	#6 Loacal Guides	
+    if choice == 6:
+        cursor.execute("""
+		SELECT g.Guide_Name, g.Conntact_No, d.Destination_Name
+		FROM Guides g
+		JOIN Destinations d ON g.Destination_ID = d.Destination_ID
+		WHERE d.Destination_Name = %s
+		""", (destination,))
+        
+        result = cursor.fetchall()
+        headers = [" Guide Name","Contact No","Location"] 
+        print("\n---Local Guides---\n")
+        print(tabulate(result, headers=headers, tablefmt="grid"))
+		
+	#7 Emergency Services
+    if choice == 7:
+        cursor.execute("""
+		SELECT h.Hospital_Name, h.Phone, d.Destination_Name
+		FROM Emergency_Services h
+		JOIN Destinations d ON h.Destination_ID = d.Destination_ID
+		WHERE d.Destination_Name = %s
+		""", (destination,))
+        
+        result = cursor.fetchall()
+        headers = ["Hospital Name","Contact", "Location"] 
+        print("\n---Emergency Services---\n")
+        print(tabulate(result, headers=headers, tablefmt="grid"))
 	
-
-    # 3️⃣ Parking
-    elif choice == 3:
+		
+	#8 Garrage
+    if choice == 8:
         cursor.execute("""
-        SELECT p.Security_Level, p.Paid_Free, d.Destination_Name
-        FROM Parking_Spots p
-        JOIN Destinations d ON p.Destination_ID = d.Destination_ID
-        """)
-        for row in cursor.fetchall():
-            print("\nDestination:", row[2], "| Security:", row[0], "| Type:", row[1])
+		SELECT b.Shop_Name, b.Contact_Number, d.Destination_Name
+		FROM Bike_Repair_Shops b
+		JOIN Destinations d ON b.Destination_ID = d.Destination_ID
+		WHERE d.Destination_Name = %s
+		""", (destination,))
+        
+        result = cursor.fetchall()
+        headers = ["Shop Name.","Contact No","Location"] 
+        print("\n--- Garrages ---\n")
+        print(tabulate(result, headers=headers, tablefmt="grid"))
+		
 
-    # 4️⃣ Emergency
-    elif choice == 4:
+		
+	#9 Past User Review
+    if choice == 9:
         cursor.execute("""
-        SELECT e.Hospital_Name, e.Phone, d.Destination_Name
-        FROM Emergency_Services e
-        JOIN Destinations d ON e.Destination_ID = d.Destination_ID
-        """)
-        for row in cursor.fetchall():
-            print("\nHospital:", row[0], "| Phone:", row[1], "| Destination:", row[2])
-
-    # 5️⃣ Guides
-    elif choice == 5:
-        cursor.execute("""
-        SELECT g.Guide_Name, g.Conntact_No, d.Destination_Name
-        FROM Guides g
-        JOIN Destinations d ON g.Destination_ID = d.Destination_ID
-        """)
-        for row in cursor.fetchall():
-            print("\nGuide:", row[0], "| Contact:", row[1], "| Destination:", row[2])
-
-    # 6️⃣ Reviews
-    elif choice == 6:
-        cursor.execute("""
-        SELECT u.Name, r.Rating, r.Comment, d.Destination_Name
-        FROM Reviews r
-        JOIN Users u ON r.User_id = u.User_id
-        JOIN Destinations d ON r.Destination_ID = d.Destination_ID
-        """)
-        for row in cursor.fetchall():
-            print("\nUser:", row[0], "| Rating:", row[1], "| Review:", row[2], "| Destination:", row[3])
-
-    # 7️⃣ Garages
-    elif choice == 7:
-        cursor.execute("""
-        SELECT b.Shop_Name, b.Contact_Number, d.Destination_Name
-        FROM Bike_Repair_Shops b
-        JOIN Destinations d ON b.Destination_ID = d.Destination_ID
-        """)
-        for row in cursor.fetchall():
-            print("\nGarage:", row[0], "| Contact:", row[1], "| Destination:", row[2])
-
-    # 8️⃣ Routes
-    elif choice == 8:
-        cursor.execute("""
-        SELECT r.Source, r.Distance_KM, r.Difficulty, d.Destination_Name
-        FROM Routes r
-        JOIN Destinations d ON r.Destination_ID = d.Destination_ID
-        """)
-        for row in cursor.fetchall():
-            print("\nFrom:", row[0], "| Distance:", row[1], "| Difficulty:", row[2], "| Destination:", row[3])
-
-    # 9️⃣ Stays (if table exists)
-    elif choice == 9:
-        cursor.execute("""
-        SELECT s.Stay_Name, s.Price, d.Destination_Name
-        FROM Stays s
-        JOIN Destinations d ON s.Destination_ID = d.Destination_ID
-        """)
-        for row in cursor.fetchall():
-            print("\nStay:", row[0], "| Price:", row[1], "| Destination:", row[2])
-
-    # 🔟 Default Filter
-    elif choice == 10:
-        print("\n--- Apply Filters ---")
-        destination = input("Enter destination: ")
-        rating = float(input("Minimum rating: "))
-        price = input("Price range (Low/Medium/High): ")
-
-        cursor.execute("""
-        SELECT d.Destination_Name, f.Food_Name, f.Rating, f.Price_Range
-        FROM Destinations d
-        JOIN Food_Places f ON d.Destination_ID = f.Destination_ID
-        WHERE d.Destination_Name = %s
-        OR f.Rating >= %s
-        OR f.Price_Range = %s
-        """, (destination, rating, price))
-
-        for row in cursor.fetchall():
-            print("Destination:", row[0],
-                  "| Food:", row[1],
-                  "| Rating:", row[2],
-                  "| Price:", row[3])
-
+		SELECT d.Destination_Name , r.Comment, r.Rating
+		FROM Reviews r
+		JOIN Destinations d ON r.Destination_ID = d.Destination_ID
+		WHERE d.Destination_Name = %s
+		""", (destination,))
+        
+        result = cursor.fetchall()
+        headers = ["Location","Comment","Rating"] 
+        print("\n---Past User Reviews---\n")
+        print(tabulate(result, headers=headers, tablefmt="grid"))
+    
+    #10
     # Exit
-    elif choice == 11:
-        print("\nExiting system...")
+    elif choice == 10:
+        print("\n\tTHANK YOU \n\tExiting system...")
         break
 
     else:
