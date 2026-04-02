@@ -1,14 +1,14 @@
 import mysql.connector as co
 from tabulate import tabulate
 
-conn = co.connect(
+trv = co.connect(
     host="localhost",
     user="root",
     password="2503",
     database="travel_system"
 )
 
-cursor = conn.cursor()
+cursor = trv.cursor()
 
 print("Connected successfully!")
 
@@ -42,12 +42,12 @@ while True:
         try:
             dest = int(input("\nEnter Destination ID to view details: "))
         except:
-            print("❌ Invalid input")
+            print("Invalid input")
             continue            
         
         cursor.execute("""
 			SELECT d.Destination_Name, d.Type ,r.Base,  d.Location, d.Best_Visit_Time, r.Difficulty,f.Food_Name, g.Guide_Name, 
-                       g.Conntact_no, h.Hospital_Name, h.Phone, b.Shop_Name , b.Contact_Number 
+                       g.Contact_No, h.Hospital_Name, h.Phone, b.Shop_Name , b.Contact_Number 
 			FROM Destinations d
 			JOIN Food_Places f ON f.Destination_ID = d.Destination_ID
 			JOIN Bike_Repair_Shops b ON b.Destination_ID = d.Destination_ID
@@ -59,7 +59,7 @@ while True:
         result = cursor.fetchall()
 
         if not result:
-            print("❌ No data found for this destination")
+            print(" No data found for this destination")
         else:
             headers = [
                  "Destination_Name", "Type", "Base Village","Location","Best Visit Time", "Difficulty",
@@ -129,7 +129,7 @@ while True:
 	#6 Loacal Guides	
     if choice == 6:
         cursor.execute("""
-		SELECT g.Guide_Name, g.Conntact_No, d.Destination_Name
+		SELECT g.Guide_Name, g.Contact_No, d.Destination_Name
 		FROM Guides g
 		JOIN Destinations d ON g.Destination_ID = d.Destination_ID
 		WHERE d.Destination_Name = %s
@@ -194,4 +194,4 @@ while True:
     else:
         print("\nInvalid choice!")
 
-conn.close()
+trv.close()
