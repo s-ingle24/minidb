@@ -46,14 +46,13 @@ while True:
             continue            
         
         cursor.execute("""
-			SELECT d.Destination_Name, d.Type, r.Difficulty, d.Location , f.Food_Name, g.Guide_Name, 
+			SELECT d.Destination_Name, d.Type ,r.Base,  d.Location, d.Best_Visit_Time, r.Difficulty,f.Food_Name, g.Guide_Name, 
                        g.Conntact_no, h.Hospital_Name, h.Phone, b.Shop_Name , b.Contact_Number 
 			FROM Destinations d
 			JOIN Food_Places f ON f.Destination_ID = d.Destination_ID
 			JOIN Bike_Repair_Shops b ON b.Destination_ID = d.Destination_ID
 			JOIN Emergency_Services h ON h.Destination_ID = d.Destination_ID
 			JOIN Guides g ON g.Destination_ID = d.Destination_ID
-			JOIN Parking_Spots p ON p.Destination_ID = d.Destination_ID
 			JOIN Routes r ON r.Destination_ID = d.Destination_ID
             WHERE d.Destination_ID = %s
             """, (dest,))
@@ -63,9 +62,9 @@ while True:
             print("❌ No data found for this destination")
         else:
             headers = [
-                 "Destination_Name", "Type", "Location", "Difficulty",
-                "Food_Name", "Guide_Name", "Contact_no",
-                 "Hospital_Name", "Phone", "Shop_Name", "Contact_Number"
+                 "Destination_Name", "Type", "Base Village","Location","Best Visit Time", "Difficulty",
+                "Food Places", "Guide Name", "Contact No",
+                 "Hospital Name", "Phone", "Shop Name", "Contact No"
             ]
             print("\n--- Destination Details ---")
             print(tabulate(result, headers=headers, tablefmt="grid"))
@@ -73,7 +72,7 @@ while True:
 	#2 Routes
     if choice == 2:
         cursor.execute("""
-		SELECT t.Base_Village, t.Distance_KM, t.Difficulty, d.Destination_Name
+		SELECT t.Base, t.Distance_KM, t.Difficulty, d.Destination_Name
 		FROM Routes t
 		JOIN Destinations d ON t.Destination_ID = d.Destination_ID
 		WHERE d.Destination_Name = %s
