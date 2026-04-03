@@ -23,7 +23,8 @@ while True:
     print("7. Show Emergency Services")
     print("8. Show Garages")
     print("9. Show User Reviews")
-    print("10. Exit")
+    print("10.Add Review")
+    print("11. Exit")
 
     choice = int(input("\nEnter choice: "))
     if choice in [2,3,4,5,6,7,8,9]:
@@ -75,8 +76,8 @@ while True:
 		SELECT t.Base, t.Distance_KM, t.Difficulty, d.Destination_Name
 		FROM Routes t
 		JOIN Destinations d ON t.Destination_ID = d.Destination_ID
-		WHERE d.Destination_Name = %s
-		""", (destination,))
+		WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+        """, (destination,destination))
         
         result = cursor.fetchall()
         headers = [" Start From","Distance (km)","Difficulty","Location"] 
@@ -90,8 +91,8 @@ while True:
 		SELECT f.Food_ID, f.Food_Name, f.Rating, f.Price_Range, d.Destination_Name
 		FROM Food_Places f
 		JOIN Destinations d ON f.Destination_ID = d.Destination_ID
-		WHERE d.Destination_Name = %s
-		""", (destination,))
+		WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+        """, (destination,destination))
         
         result = cursor.fetchall()
         headers = ["Sr.No.","Food","Rating","PriceRange","Location"] 
@@ -104,8 +105,8 @@ while True:
 		SELECT p.Parking_ID, p.Paid_Free, p.Capacity, p.Security_Level, p.Contact_No, d.Destination_Name
 		FROM Parking_Spots p
 		JOIN Destinations d ON p.Destination_ID = d.Destination_ID
-		WHERE d.Destination_Name = %s
-		""", (destination,))
+		WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+        """, (destination,destination))
         
         result = cursor.fetchall()
         headers = ["Parking ID","Paid/Free","Capacity","Security","Contact", "Location"] 
@@ -118,8 +119,8 @@ while True:
 		SELECT s.Stay_Name ,s.Address, s.Contact_No, s.Rating, d.Destination_Name
 		FROM Stays s
 		JOIN Destinations d ON s.Destination_ID = d.Destination_ID
-		WHERE d.Destination_Name = %s
-		""", (destination,))
+		WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+        """, (destination,destination))
         
         result = cursor.fetchall()
         headers = ["Stay Name","Address","Contact","Rating", "Location"] 
@@ -132,8 +133,8 @@ while True:
 		SELECT g.Guide_Name, g.Contact_No, d.Destination_Name
 		FROM Guides g
 		JOIN Destinations d ON g.Destination_ID = d.Destination_ID
-		WHERE d.Destination_Name = %s
-		""", (destination,))
+		WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+        """, (destination,destination))
         
         result = cursor.fetchall()
         headers = [" Guide Name","Contact No","Location"] 
@@ -146,8 +147,8 @@ while True:
 		SELECT h.Hospital_Name, h.Phone, d.Destination_Name
 		FROM Emergency_Services h
 		JOIN Destinations d ON h.Destination_ID = d.Destination_ID
-		WHERE d.Destination_Name = %s
-		""", (destination,))
+		WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+        """, (destination,destination))
         
         result = cursor.fetchall()
         headers = ["Hospital Name","Contact", "Location"] 
@@ -161,8 +162,8 @@ while True:
 		SELECT b.Shop_Name, b.Contact_Number, d.Destination_Name
 		FROM Bike_Repair_Shops b
 		JOIN Destinations d ON b.Destination_ID = d.Destination_ID
-		WHERE d.Destination_Name = %s
-		""", (destination,))
+		WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+        """, (destination,destination))
         
         result = cursor.fetchall()
         headers = ["Shop Name.","Contact No","Location"] 
@@ -174,22 +175,37 @@ while True:
 	#9 Past User Review
     if choice == 9:
         cursor.execute("""
-		SELECT d.Destination_Name , r.Comment, r.Rating
-		FROM Reviews r
-		JOIN Destinations d ON r.Destination_ID = d.Destination_ID
-		WHERE d.Destination_Name = %s
-		""", (destination,))
+        SELECT d.Destination_Name , r.Comment, r.Rating
+        FROM Reviews r
+        JOIN Destinations d ON r.Destination_ID = d.Destination_ID
+        WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+        """, (destination,destination))
         
         result = cursor.fetchall()
         headers = ["Location","Comment","Rating"] 
         print("\n---Past User Reviews---\n")
         print(tabulate(result, headers=headers, tablefmt="grid"))
-    
-    #10
-    # Exit
-    elif choice == 10:
+        
+       
+    #10 Add User Review
+    if choice == 10:
+        print("=====FILL THE REVIEW=====")
+        id = input("Enter User ID")
+        did = int(input("\nDestination ID: "))
+        rate = int(input("Give Rating (1 - 5): "))
+        comment = input("Write Review:\n")
+        cursor.execute("""
+        INSERT INTO Reviews ( User_ID , Destination_ID , Rating, Comment ) 
+        VALUES (%s, %s, %s,%s ) 
+        """, (id,did,rate,comment))
+             
+        print("\n---Review Addes Successfully---\n")
+            
+        # Exit
+    elif choice == 11:
         print("\n\tTHANK YOU \n\tExiting system...")
         break
+
 
     else:
         print("\nInvalid choice!")
