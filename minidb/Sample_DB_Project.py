@@ -71,7 +71,7 @@ while True:
             print(tabulate(result, headers=headers, tablefmt="grid"))
 
 	#2 Routes
-    if choice == 2:
+    elif choice == 2:
         cursor.execute("""
 		SELECT t.Base, t.Distance_KM, t.Difficulty, d.Destination_Name
 		FROM Routes t
@@ -86,7 +86,7 @@ while True:
 		
 		
 	# 3 Food
-    if choice == 3:
+    elif choice == 3:
         cursor.execute("""
 		SELECT f.Food_ID, f.Food_Name, f.Rating, f.Price_Range, d.Destination_Name
 		FROM Food_Places f
@@ -100,7 +100,7 @@ while True:
         print(tabulate(result, headers=headers, tablefmt="grid"))
 		
 	# 4 Parking
-    if choice == 4:
+    elif choice == 4:
         cursor.execute("""
 		SELECT p.Parking_ID, p.Paid_Free, p.Capacity, p.Security_Level, p.Contact_No, d.Destination_Name
 		FROM Parking_Spots p
@@ -114,7 +114,7 @@ while True:
         print(tabulate(result, headers=headers, tablefmt="grid"))
 		
 	#5 Stays
-    if choice == 5:
+    elif choice == 5:
         cursor.execute("""
 		SELECT s.Stay_Name ,s.Address, s.Contact_No, s.Rating, d.Destination_Name
 		FROM Stays s
@@ -128,7 +128,7 @@ while True:
         print(tabulate(result, headers=headers, tablefmt="grid"))
 		
 	#6 Loacal Guides	
-    if choice == 6:
+    elif choice == 6:
         cursor.execute("""
 		SELECT g.Guide_Name, g.Contact_No, d.Destination_Name
 		FROM Guides g
@@ -142,7 +142,7 @@ while True:
         print(tabulate(result, headers=headers, tablefmt="grid"))
 		
 	#7 Emergency Services
-    if choice == 7:
+    elif choice == 7:
         cursor.execute("""
 		SELECT h.Hospital_Name, h.Phone, d.Destination_Name
 		FROM Emergency_Services h
@@ -157,7 +157,7 @@ while True:
 	
 		
 	#8 Garrage
-    if choice == 8:
+    elif choice == 8:
         cursor.execute("""
 		SELECT b.Shop_Name, b.Contact_Number, d.Destination_Name
 		FROM Bike_Repair_Shops b
@@ -173,7 +173,7 @@ while True:
 
 		
 	#9 Past User Review
-    if choice == 9:
+    elif choice == 9:
         cursor.execute("""
         SELECT d.Destination_Name , r.Comment, r.Rating
         FROM Reviews r
@@ -188,7 +188,7 @@ while True:
         
        
     #10 Add User Review
-    if choice == 10:
+    elif choice == 10:
         print("=====FILL THE REVIEW=====")
         id = input("Enter User ID")
         did = int(input("\nDestination ID: "))
