@@ -10,7 +10,6 @@ trv = co.connect(
 
 cursor = trv.cursor()
 
-print("Connected successfully!")
 
 while True:
     print("\n\n==== SMART TRAVEL SYSTEM ====\n")
@@ -24,7 +23,7 @@ while True:
     print("8. Show Garages")
     print("9. Show User Reviews")
     print("10.Add Review")
-    print("11. Exit")
+    print("00. Exit")
 
     choice = int(input("\nEnter choice: "))
     if choice in [2,3,4,5,6,7,8,9]:
@@ -190,7 +189,7 @@ while True:
     #10 Add User Review
     elif choice == 10:
         print("=====FILL THE REVIEW=====")
-        id = input("Enter User ID")
+        id = input("Enter User ID: ")
         did = int(input("\nDestination ID: "))
         rate = int(input("Give Rating (1 - 5): "))
         comment = input("Write Review:\n")
@@ -201,8 +200,8 @@ while True:
              
         print("\n---Review Addes Successfully---\n")
             
-        # Exit
-    elif choice == 11:
+    # Exit
+    elif choice == 00:
         print("\n\tTHANK YOU \n\tExiting system...")
         break
 

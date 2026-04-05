@@ -1,0 +1,490 @@
+import mysql.connector as co
+from tabulate import tabulate
+import tkinter as tk
+
+
+trv = co.connect(
+    host="localhost",
+    user="root",
+    password="2503",
+    database="travel_system"
+)
+
+cursor = trv.cursor()
+
+
+from tkinter import messagebox
+
+# assume DB already connected:
+# cursor, trv
+
+root = tk.Tk()
+root.title("SMART TRAVEL SYSTEM")
+root.geometry("1080x720")
+
+# ---------- FUNCTIONS ----------
+
+def show_signup():
+    clear_screen()
+
+    tk.Label(root, text="Sign Up", font=("Arial", 16)).pack()
+
+    tk.Label(root, text="Name").pack()
+    name_entry = tk.Entry(root)
+    name_entry.pack()
+
+    tk.Label(root, text="Contact No").pack()
+    contact_entry = tk.Entry(root)
+    contact_entry.pack()
+
+    tk.Label(root, text="Email").pack()
+    email_entry = tk.Entry(root)
+    email_entry.pack()
+
+    tk.Label(root, text="User ID").pack()
+    id_entry = tk.Entry(root)
+    id_entry.pack()
+
+    tk.Label(root, text="Password").pack()
+    pass_entry = tk.Entry(root, show="*")
+    pass_entry.pack()
+
+    def submit_signup():
+        user = name_entry.get()
+        no = contact_entry.get()
+        mail = email_entry.get()
+        uid = id_entry.get()
+        pwd = pass_entry.get()
+
+        # check ID exists
+        cursor.execute("SELECT User_ID FROM Users WHERE User_ID = %s", (uid,))
+        if cursor.fetchone():
+            messagebox.showerror("Error", "User ID already exists")
+            return
+
+        # insert
+        cursor.execute("""
+        INSERT INTO Users (User_ID, Name, Email, Contact_No, Password)
+        VALUES (%s,%s,%s,%s,%s)
+        """, (uid, user, mail, no, pwd))
+        trv.commit()
+
+        messagebox.showinfo("Success", "Sign up successful!")
+
+    tk.Button(root, text="Submit", command=submit_signup).pack()
+    tk.Button(root, text="Back", command=main_menu).pack()
+
+
+def show_login():
+    clear_screen()
+
+    tk.Label(root, text="Login", font=("Arial", 16)).pack()
+
+    tk.Label(root, text="User ID").pack()
+    id_entry = tk.Entry(root)
+    id_entry.pack()
+
+    tk.Label(root, text="Password").pack()
+    pass_entry = tk.Entry(root, show="*")
+    pass_entry.pack()
+
+    def login_check():
+        uid = id_entry.get()
+        pwd = pass_entry.get()
+
+        cursor.execute("""
+        SELECT User_ID FROM Users
+        WHERE User_ID = %s AND Password = %s
+        """, (uid, pwd))
+
+        if cursor.fetchone():
+            messagebox.showinfo("Success", "Login Successful!")
+        else:
+            messagebox.showerror("Error", "Invalid credentials")
+
+    tk.Button(root, text="Login", command=login_check).pack()
+    tk.Button(root, text="Back", command=main_menu).pack()
+
+
+# ---------- UI CONTROL ----------
+
+def clear_screen():
+    for widget in root.winfo_children():
+        widget.destroy()
+
+
+def main_menu():
+    clear_screen()
+
+    tk.Label(root, text="SMART TRAVEL SYSTEM", font=("Arial", 20)).pack(pady=20)
+
+    tk.Button(root, text="Sign In", width=20, command=show_signup).pack(pady=10)
+    tk.Button(root, text="Login", width=20, command=show_login).pack(pady=10)
+
+
+# ---------- START ----------
+main_menu()
+root.mainloop()                #login credentil mismatch, then print 'check login credentials' and redirect again to user management.
+    
+    
+  
+                   
+def menu():
+     
+    #print("Connected successfully!")
+
+    #def Menu List:
+    while True:
+        print("\n\n==== SMART TRAVEL SYSTEM ====\n")
+        print("1. Show Destinations")
+        print("2. Show Route")
+        print("3. Show Foods")
+        print("4. Show Parkings")
+        print("5. Show Stays")
+        print("6. Show Local Guides")
+        print("7. Show Emergency Services")
+        print("8. Show Garages")
+        print("9. Show User Reviews")
+        print("10.Add Review")
+        print("22. Edit User Profile")
+        print("11. Exit")
+
+        choice = int(input("\nEnter choice: "))
+        if choice in [2,3,4,5,6,7,8,9]:
+            destination = input("Enter Destination: ")
+
+
+        # 1️ Destinations
+        if choice == 1:
+            cursor.execute("SELECT Destination_ID, Destination_Name, Location FROM Destinations")
+            data = cursor.fetchall()
+            headers = ["Sr. No.", "Destination", "Location"]
+
+            print("\n--- Destinations ---")
+            print(tabulate(data, headers=headers, tablefmt="grid"))
+            
+            try:
+                dest = int(input("\nEnter Destination ID to view details: "))
+            except:
+                print("Invalid input")
+                continue            
+        
+            cursor.execute("""
+			SELECT d.Destination_Name, d.Type ,r.Base,  d.Location, d.Best_Visit_Time, r.Difficulty,f.Food_Name, g.Guide_Name, 
+                       g.Contact_No, h.Hospital_Name, h.Phone, b.Shop_Name , b.Contact_Number 
+			FROM Destinations d
+			JOIN Food_Places f ON f.Destination_ID = d.Destination_ID
+			JOIN Bike_Repair_Shops b ON b.Destination_ID = d.Destination_ID
+			JOIN Emergency_Services h ON h.Destination_ID = d.Destination_ID
+			JOIN Guides g ON g.Destination_ID = d.Destination_ID
+			JOIN Routes r ON r.Destination_ID = d.Destination_ID
+            WHERE d.Destination_ID = %s
+            """, (dest,))
+            result = cursor.fetchall()
+
+            if not result:
+                print(" No data found for this destination")
+            else:
+                headers = [
+                 "Destination_Name", "Type", "Base Village","Location","Best Visit Time", "Difficulty",
+                "Food Places", "Guide Name", "Contact No",
+                 "Hospital Name", "Phone", "Shop Name", "Contact No"
+            ]
+                print("\n--- Destination Details ---")
+                print(tabulate(result, headers=headers, tablefmt="grid"))
+
+	    #2 Routes
+        elif choice == 2:
+            cursor.execute("""
+		    SELECT t.Base, t.Distance_KM, t.Difficulty, d.Destination_Name
+            FROM Routes t
+            JOIN Destinations d ON t.Destination_ID = d.Destination_ID
+            WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+            """, (destination,destination))
+        
+            result = cursor.fetchall()
+            headers = [" Start From","Distance (km)","Difficulty","Location"] 
+            print("\n---Trek Route---\n")
+            print(tabulate(result, headers=headers, tablefmt="grid"))
+		
+		
+        # 3 Food
+        elif choice == 3:
+            cursor.execute("""
+            SELECT f.Food_ID, f.Food_Name, f.Rating, f.Price_Range, d.Destination_Name
+            FROM Food_Places f
+            JOIN Destinations d ON f.Destination_ID = d.Destination_ID
+            WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+            """, (destination,destination))
+            
+            result = cursor.fetchall()
+            headers = ["Sr.No.","Food","Rating","PriceRange","Location"] 
+            print("\n---Food Places---\n")
+            print(tabulate(result, headers=headers, tablefmt="grid"))
+            
+        # 4 Parking
+        elif choice == 4:
+            cursor.execute("""
+            SELECT p.Parking_ID, p.Paid_Free, p.Capacity, p.Security_Level, p.Contact_No, d.Destination_Name
+            FROM Parking_Spots p
+            JOIN Destinations d ON p.Destination_ID = d.Destination_ID
+            WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+            """, (destination,destination))
+            
+            result = cursor.fetchall()
+            headers = ["Parking ID","Paid/Free","Capacity","Security","Contact", "Location"] 
+            print("\n---Parking Spots---\n")
+            print(tabulate(result, headers=headers, tablefmt="grid"))
+            
+        #5 Stays
+        elif choice == 5:
+            cursor.execute("""
+            SELECT s.Stay_Name ,s.Address, s.Contact_No, s.Rating, d.Destination_Name
+            FROM Stays s
+            JOIN Destinations d ON s.Destination_ID = d.Destination_ID
+            WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+            """, (destination,destination))
+            
+            result = cursor.fetchall()
+            headers = ["Stay Name","Address","Contact","Rating", "Location"] 
+            print("\n--- Stays ---\n")
+            print(tabulate(result, headers=headers, tablefmt="grid"))
+            
+        #6 Loacal Guides	
+        elif choice == 6:
+            cursor.execute("""
+            SELECT g.Guide_Name, g.Contact_No, d.Destination_Name
+            FROM Guides g
+            JOIN Destinations d ON g.Destination_ID = d.Destination_ID
+            WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+            """, (destination,destination))
+            
+            result = cursor.fetchall()
+            headers = [" Guide Name","Contact No","Location"] 
+            print("\n---Local Guides---\n")
+            print(tabulate(result, headers=headers, tablefmt="grid"))
+            
+        #7 Emergency Services
+        elif choice == 7:
+            cursor.execute("""
+            SELECT h.Hospital_Name, h.Phone, d.Destination_Name
+            FROM Emergency_Services h
+            JOIN Destinations d ON h.Destination_ID = d.Destination_ID
+            WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+            """, (destination,destination))
+            
+            result = cursor.fetchall()
+            headers = ["Hospital Name","Contact", "Location"] 
+            print("\n---Emergency Services---\n")
+            print(tabulate(result, headers=headers, tablefmt="grid"))
+        
+            
+        #8 Garrage
+        elif choice == 8:
+            cursor.execute("""
+            SELECT b.Shop_Name, b.Contact_Number, d.Destination_Name
+            FROM Bike_Repair_Shops b
+            JOIN Destinations d ON b.Destination_ID = d.Destination_ID
+            WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+            """, (destination,destination))
+            
+            result = cursor.fetchall()
+            headers = ["Shop Name.","Contact No","Location"] 
+            print("\n--- Garrages ---\n")
+            print(tabulate(result, headers=headers, tablefmt="grid"))
+            
+
+            
+        #9 Past User Review
+        elif choice == 9:
+            cursor.execute("""
+            SELECT d.Destination_Name , r.Comment, r.Rating
+            FROM Reviews r
+            JOIN Destinations d ON r.Destination_ID = d.Destination_ID
+            WHERE d.Destination_Name = %s OR d.Destination_ID = %s
+            """, (destination,destination))
+            
+            result = cursor.fetchall()
+            headers = ["Location","Comment","Rating"] 
+            print("\n---Past User Reviews---\n")
+            print(tabulate(result, headers=headers, tablefmt="grid"))
+            
+        
+        #10 Add User Review
+        elif choice == 10:
+            print("=====FILL THE REVIEW=====")
+            id = input("Enter User ID")
+            did = int(input("\nDestination ID: "))
+            rate = int(input("Give Rating (1 - 5): "))
+            comment = input("Write Review:\n")
+            cursor.execute("""
+            INSERT INTO Reviews ( User_ID , Destination_ID , Rating, Comment ) 
+            VALUES (%s, %s, %s,%s ) 
+            """, (id,did,rate,comment))
+                
+            print("\n---Review Addes Successfully---\n")
+                
+            
+        #Edit Profile
+        elif choice == 22:
+            user = input("Enter User ID: ")
+            pas = input("Enter Password: ")
+            
+            cursor.execute("""
+                    SELECT User_ID, Name, Email, Contact_No FROM Users
+                    WHERE User_ID = %s AND Password=%s
+                    """,(user, pas))
+            profil= cursor.fetchone()
+            if profil:
+                headers =["User ID","User Name","Email","Contact Number"]
+                print("\n")
+                print(tabulate([profil], headers=headers, tablefmt="grid"))
+
+            else:
+                print("Something Wrong, Try Again !")
+                continue
+
+            while True:
+                print("\n\n==== MANAGE USER PROFILE ====\n")
+                #print("a. Show Profile")
+                print("4. Change Email")
+                print("3. Change Password")
+                print("5. Change Contact No")
+                print("1. Change Name")
+                print("2. Change User ID")
+                print("6. Delete Profile")
+                print("00. EXIT ")
+                edit = int(input("Select One: "))
+                
+                
+   
+                #Change Name        
+                if edit == 1:
+                    cursor.execute("""
+                    SELECT *FROM Users
+                    WHERE User_ID = %s AND Password=%s
+                    """,(user, pas))
+                    if cursor.fetchone():
+                        name = input("Enter New Name: ")
+                        cursor.execute("""
+                        UPDATE Users SET
+                        Name = %s
+                        WHERE User_ID = %s AND Password=%s
+                        """,(name,user,pas))
+                        trv.commit()
+                        print("Name Changed Successfully")
+                    else:
+                        print("Something Wrong, Try Again !")
+                
+                #Change User ID
+                elif edit == 2:
+                    cursor.execute("""
+                    SELECT *FROM Users
+                    WHERE User_ID = %s AND Password=%s
+                    """,(user, pas))
+                    if cursor.fetchone():
+                        id = input("Enter New User ID: ")
+                        cursor.execute("""
+                        UPDATE Users SET
+                        User_ID = %s
+                        WHERE User_ID = %s AND Password=%s
+                        """,(id,user,pas))
+                        trv.commit()
+                        print("User ID Changed Successfully")
+                    else:
+                        print("Something Wrong, Try Again !")
+                
+                #Change Password
+                elif edit == 3:
+                    cursor.execute("""
+                    SELECT *FROM Users
+                    WHERE User_ID = %s AND Password=%s
+                    """,(user, pas))
+                    if cursor.fetchone():
+                        pas2 = input("Enter New Password: ")
+                        cursor.execute("""
+                        UPDATE Users SET
+                        Password = %s
+                        WHERE User_ID = %s AND Password=%s
+                        """,(pas2,user,pas))
+                        trv.commit()
+                        print("Password Changed Successfully")
+                    else:
+                        print("Something Wrong, Try Again !")
+
+                
+                #Change Email ID
+                elif edit == 4:
+                    cursor.execute("""
+                    SELECT *FROM Users
+                    WHERE User_ID = %s AND Password=%s
+                    """,(user, pas))
+                    if cursor.fetchone():
+                        mail2 = input("Enter New Name")
+                        cursor.execute("""
+                        UPDATE Users SET
+                        Email = %s
+                        WHERE User_ID = %s AND Password=%s
+                        """,(mail2,user,pas))
+                        trv.commit()
+                        print("Email ID Changed Successfully")
+                    else:
+                        print("Something Wrong, Try Again !")
+
+                #Change Contact No
+                elif edit == 5:
+                    cursor.execute("""
+                    SELECT *FROM Users
+                    WHERE User_ID = %s AND Password=%s
+                    """,(user, pas))
+                    if cursor.fetchone():
+                        call = input("Enter New Contact Number: ")
+                        cursor.execute("""
+                        UPDATE Users SET
+                        Contact_No = %s
+                        WHERE User_ID = %s AND Password=%s
+                        """,(call,user,pas))
+                        trv.commit()
+                        print("Contact Number Changed Successfully")
+                    else:
+                        print("Something Wrong, Try Again !")
+
+                #Delete Profile 
+                elif edit == 6:
+                    cursor.execute("""
+                    SELECT *FROM Users
+                    WHERE User_ID = %s AND Password=%s
+                    """,(user, pas))
+                    if cursor.fetchone():
+                        cursor.execute("""
+                        DELETE FROM Users
+                        WHERE User_ID = %s AND Password=%s
+                        """,(user,pas))
+                        trv.commit()
+                        print("User Profile Deleted")
+                    else:
+                        print("Something Wrong, Try Again !")
+                
+        
+                elif edit == 00:
+                    print("EXITED")
+                    break
+                
+                else:
+                    print("Invalid Choice")
+        
+        # Exit
+        elif choice == 11:
+            print("\n\tTHANK YOU \n\tExiting system...")
+            break
+
+        else:
+            print("\nInvalid choice!")
+
+    trv.close()  
+        
+          
+    
+
+#if User_Management():
+#        menu()
