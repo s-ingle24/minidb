@@ -4,7 +4,7 @@ from tabulate import tabulate
 trv = co.connect(
     host="localhost",
     user="root",
-    password="2503",
+    password="your_root_password",
     database="travel_system"
 )
 
